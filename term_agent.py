@@ -1,12 +1,40 @@
 from openai import OpenAI
 from pydantic import BaseModel
 import json
+from datetime import date
+from typing import List
+
+class Insured(BaseModel):
+    name : str
+    age : int
+    gender : str
+    date_of_birth : date
+
+class DeathBenefitTableRow(BaseModel):
+    policy_year : int
+    age : int
+    premiums_paid : int
+    death_benefits : int
+    surrender_value : int
+
+class DeathBenefitTable(BaseModel):
+    rows : List[DeathBenefitTableRow]
+
+class TermDocument(BaseModel):
+    policy_date : date
+    premium_term: int
+    insurer: str
+    sum_assured : float
+    yearly_premium : int
+    monthly_premium : int
+    insured : Insured
+    death_benefit_table : DeathBenefitTable
 
 open_ai_key = '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'
 client = OpenAI(api_key= open_ai_key)
 
 # Path to the PDF form
-pdf_path = "resources/pg3.pdf"
+pdf_path = "resources/Term-CTP.pdf"
 
 # Vision-aware prompt with confidence score requirement
 prompt = """
@@ -61,7 +89,8 @@ response = client.responses.parse(
                 }
             ]
         }
-    ]
+    ],
+    text_format=TermDocument,
 )
 # Print raw content
 result = response.output_text
