@@ -9,3 +9,6 @@ classifier_agent = PolicyClassifierAgent(open_ai_key)
 
 policy_type = classifier_agent.classify(file_id=pdf_id)
 
+#Term agent
+
+
