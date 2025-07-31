@@ -141,7 +141,7 @@ def make_policy_type_chain(llm: ChatOpenAI):
         [
             ("system",
              "You are an insurance-document classifier. "
-             "Identify the policy type succinctly (e.g., 'Term', 'Whole Life', 'Endowment', 'ILP', etc.)."),
+             "Identify the policy type succinctly (e.g., 'Term', 'Whole Life', 'Endowment', 'ILP'.)."),
             ("human",
              "Given the following document text (with page markers), identify the policy type.\n\n"
              "{doc}\n\n"
