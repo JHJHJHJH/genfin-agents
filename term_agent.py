@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 import json
 from datetime import date
 from typing import List
-
+import os 
 class Insured(BaseModel):
     name : str
     age : int
@@ -31,7 +31,7 @@ class TermDocument(BaseModel):
     insured : Insured
     death_benefit_table : DeathBenefitTable
 
-open_ai_key = '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'
+open_ai_key = os.environ['OPENAI_API_KEY']
 client = OpenAI(api_key= open_ai_key)
 
 # Path to the PDF form
