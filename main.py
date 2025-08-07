@@ -1,8 +1,12 @@
 from PolicyClassifierAgent import PolicyClassifierAgent
 import logging
 from datetime import datetime
-import json
+import os
 from DocumentTermAgent import DocumentTermAgent
+
+from dotenv import load_dotenv
+load_dotenv()  # take environment variables
+
 now = str(datetime.now().strftime("%Y%b%d-%HH%MM%SS"))
 
 
@@ -16,7 +20,7 @@ logging.basicConfig(         # Log file name            # Append mode (use 'w' t
     ]
 )
 
-open_ai_key = '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'
+open_ai_key = os.environ['OPENAI_API_KEY']
 # Path to the PDF form
 pdf_path = "resources/Term-CTP.pdf" #fileid = 'file-VWsgoAhsmzuz4hMXmBye1x'
 pdf_id = 'file-VWsgoAhsmzuz4hMXmBye1x'
