@@ -11,8 +11,8 @@ Instructions:
 1. If a field is missing, set it to null.
 2. Return a "`confidence`" score from 0 (guess) to 1 (high certainty)
 3. Format output as clean JSON with `"value"`, `"page"` and `"confidence"` keys for each field.
-4. Identify the policy details ("policy_date" in DDMMYYYY, "premium_term", "insurer_company", "sum_assured", "yearly_premium", "monthly_premium"), and parse into `"PolicyDetails"`.
-5. Identify the person/life insured details ("name", "age", "gender", "date_of_birth", "is_smoker"), and parse into  `"InsuredDetails"`.
+4. Identify the policy details ("policy_name", "policy_riders" which are supplementary policies , "policy_date" in DDMMYYYY, "premium_term", "insurer_company", "sum_assured", "yearly_premium", "monthly_premium"), and parse into `"PolicyDetails"`.
+5. Identify the person/life insured details ("name", "age", "gender", "is_smoker"), and parse into  `"InsuredDetails"`.
 6. Identify the death benefits table, and parse "ALL" visible rows into  `"DeathBenefitTable"`. There should be more than 10 rows.
 """
 class BaseValue(BaseModel):
@@ -38,14 +38,14 @@ class InsuredDetails(BaseModel):
     name : StrValue
     age : IntValue
     gender : StrValue
-    date_of_birth : DateValue
+    # date_of_birth : DateValue
     is_smoker : BoolValue
     def __str__(self):
         s = 'Insured Details------------\n'
         s += f"Name : {self.name.value} \t (Page {self.name.page} | Confidence {self.name.confidence} )\n"
         s += f"Age: {self.age.value} \t (Page {self.age.page} | Confidence {self.age.confidence} )\n"
         s += f"Gender: {self.gender.value} \t (Page {self.gender.page} | Confidence {self.gender.confidence} )\n"
-        s += f"DOB (DDMMYYYY): {self.date_of_birth.value} \t (Page {self.date_of_birth.page} | Confidence {self.date_of_birth.confidence} )\n"
+        # s += f"DOB (DDMMYYYY): {self.date_of_birth.value} \t (Page {self.date_of_birth.page} | Confidence {self.date_of_birth.confidence} )\n"
         s += f"Is Smoker: {self.is_smoker.value} \t (Page {self.is_smoker.page} | Confidence {self.is_smoker.confidence} )\n"
         return s
 
@@ -67,6 +67,8 @@ class DeathBenefitTable(BaseModel):
 
         return s
 class PolicyDetails(BaseModel):
+    policy_name: StrValue
+    policy_riders: list[StrValue]
     policy_date : DateValue
     premium_term: IntValue
     insurer_company: StrValue
@@ -76,6 +78,9 @@ class PolicyDetails(BaseModel):
     
     def __str__(self):
         s = 'Policy Details----------------\n'
+        s += f"Policy Name : {self.policy_name.value} \t (Page {self.policy_name.page} | Confidence {self.policy_name.confidence} )\n"
+        for i, rider in enumerate( self.policy_riders ):
+            s += f"Rider {str(i)} : {rider.value} \t (Page {rider.page} | Confidence {rider.confidence} )\n"
         s += f"Policy Date : {self.policy_date.value} \t (Page {self.policy_date.page} | Confidence {self.policy_date.confidence} )\n"
         s += f"Premium Term: {self.premium_term.value} \t (Page {self.premium_term.page} | Confidence {self.premium_term.confidence} )\n"
         s += f"Insurer: {self.insurer_company.value} \t (Page {self.insurer_company.page} | Confidence {self.insurer_company.confidence} )\n"
