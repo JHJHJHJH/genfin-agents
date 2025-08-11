@@ -64,7 +64,7 @@ class PolicyClassifierAgent:
 
         logging.info("Policy classification started...")
         response = client.responses.parse(
-            model="gpt-4.1-mini",
+            model="gpt-5-mini",
             input=[
                 {
                     "role": "user",
@@ -79,7 +79,7 @@ class PolicyClassifierAgent:
                         },
                         {
                             "type" : "input_text",
-                            "text" : "Identify the policy type succinctly (e.g., 'Term', 'Whole Life', 'Endowment', 'ILP'.)."
+                            "text" : "Identify the policy type succinctly (Options: 'Term', 'Whole Life', 'Endowment', 'Investment Linked Product')"
                         }
                     ]
                 }

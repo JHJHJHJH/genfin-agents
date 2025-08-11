@@ -1,5 +1,5 @@
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SkipValidation
 import json
 from datetime import date
 from typing import List, Literal
@@ -29,7 +29,7 @@ class StrValue(BaseValue):
     value: str
 
 class DateValue(BaseValue):
-    value: date
+    value: SkipValidation[date]
 
 class BoolValue(BaseValue):
     value: bool
@@ -110,7 +110,7 @@ class DocumentTermAgent:
 
         logging.info("Term data extraction started...")
         response = client.responses.parse(
-            model="gpt-4.1-mini",
+            model="gpt-5-mini",
             input=[
                 {
                     "role": "user",
