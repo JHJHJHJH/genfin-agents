@@ -118,6 +118,8 @@ def parse_pdf(doc):
         pix = page.get_pixmap()
         # Save the image to a file
         pix.save("page_image.png")
+        # image_data = pix.tobytes()  # Get raw image bytes
+        # width, height = pix.width, pix.height
       first_block = blocks[0]
       txt = first_block[4]
       return 'SECTION 1 - CLIENT INFORMATION' in txt
@@ -189,3 +191,26 @@ class FnaAgent:
 # pdf_data = BytesIO(response.content)
 # dopdf_docc = fitz.open(stream=pdf_data, filetype="pdf")
 
+
+
+# import base64
+# from openai import OpenAI
+
+# client = OpenAI()
+
+# prompt = "What is in this image?"
+# with open("path/to/image.png", "rb") as image_file:
+#     b64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+# response = client.responses.create(
+#     model="gpt-4o-mini",
+#     input=[
+#         {
+#             "role": "user",
+#             "content": [
+#                 {"type": "input_text", "text": prompt},
+#                 {"type": "input_image", "image_url": f"data:image/png;base64,{b64_image}"},
+#             ],
+#         }
+#     ],
+# )
