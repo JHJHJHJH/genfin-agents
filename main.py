@@ -1,9 +1,9 @@
-from PolicyClassifierAgent import PolicyClassifierAgent
+from agents.PolicyClassifierAgent import PolicyClassifierAgent
 import logging
 from datetime import datetime
 import os
-from DocumentTermAgent import DocumentTermAgent
-
+from agents.DocumentTermAgent import DocumentTermAgent
+from agents.FnaAgent import FnaAgent
 from dotenv import load_dotenv
 load_dotenv()  # take environment variables
 
@@ -27,12 +27,16 @@ pdf_path = "resources/Term/Term-3-Singlife.pdf"
 # pdf_id = 'file-EddV8AV4q9dmStBwaK4Tcn' #Term-2-Singlife
 pdf_id = 'file-ASnB141Su167umcV4a2cDL' #Term-3-Singlife
 
+fna_file_path = 'resources/Term/Term-3-FNA.pdf'
+fna_agent = FnaAgent()
+kyc_data = fna_agent.extract(fna_file_path)
+
 # logging.info("Classifing document...")
 classifier_agent = PolicyClassifierAgent(open_ai_key)
 policy_type = classifier_agent.classify(file_id=pdf_id)
 
 # Term agent
-logging.info("Extracting term document data...")
+# logging.info("Extracting term document data...")
 term_agent = DocumentTermAgent(open_ai_key)
 doc = term_agent.extract(file_id=pdf_id)
 

@@ -114,6 +114,10 @@ def parse_pdf(doc):
       
     def is_section1_page(page):
       blocks = page.get_text('blocks', sort= True)
+      if len(blocks) == 0:
+        pix = page.get_pixmap()
+        # Save the image to a file
+        pix.save("page_image.png")
       first_block = blocks[0]
       txt = first_block[4]
       return 'SECTION 1 - CLIENT INFORMATION' in txt
@@ -164,6 +168,19 @@ def extract_text_from_pdf(pdf_path):
     doc.close()  # Close the document
 
 
+class FnaAgent:
+   def __init__(self):
+      pass
+   
+   def extract(self, file_path ):
+      # pdf_doc = fitz.open("resources/Annuity-FNA.pdf" ) # open a document
+      pdf_doc = fitz.open(file_path) # open a document
+
+      kyc_data = parse_pdf(pdf_doc)
+        
+      pprint.pprint(kyc_data.__dict__)
+
+      return kyc_data
 #if url
 # url = 'some file url'
 # response = requests.get(url)
@@ -171,8 +188,4 @@ def extract_text_from_pdf(pdf_path):
 # # Open the PDF from memory
 # pdf_data = BytesIO(response.content)
 # dopdf_docc = fitz.open(stream=pdf_data, filetype="pdf")
-pdf_doc = fitz.open("resources/Annuity-FNA.pdf" ) # open a document
 
-kyc_data = parse_pdf(pdf_doc)
-  
-pprint.pprint(kyc_data.__dict__)
