@@ -3,6 +3,7 @@ import requests
 from io import BytesIO
 import json
 import pprint
+import re
 class KycData:
     def __init__(self): 
         # self.client_name = None
@@ -50,6 +51,76 @@ def process_firstpage( first_pg , kyc_dataobject):
     return kyc_dataobject
 
   #process section10a
+
+def process_section12( page, kyc_dataobject):
+    def extract_rider_info(text):
+      pattern = r'Rider (\d+): (.+?)\n'
+      match = re.search(pattern, text)
+      if match:
+          rider_number = match.group(1)
+          policy_name = match.group(2)
+          return rider_number, policy_name
+      return None, None
+    #functions
+    def is_basis_of_recommendations(block):
+      txt = block[4]
+      return 'Basis of Recommendations' in txt
+    def is_client_risk_profile(block):
+      txt = block[4]
+      return 'Client\'s Risk Profile' in txt
+    def is_policy_term(block):
+      txt = block[4]
+      return 'Policy Term' in txt
+    def is_rider(block):
+      txt = block[4]
+      return 'Rider' in txt
+    
+    riders = []
+    #process section1
+    blocks = page.get_text('blocks', sort= True)
+    #assert section and data existence then extract
+    for i, block in enumerate(blocks):
+      print(block)
+      if is_basis_of_recommendations(block):
+        kyc_dataobject.policy_name = extract_text_from_next_block(blocks, i)
+      if is_client_risk_profile(block):
+        kyc_dataobject.payment_frequency = extract_text_from_next_block(blocks, i+1)
+        kyc_dataobject.settlement_mode = extract_text_from_next_block(blocks, i+2)
+      if is_policy_term(block):
+        kyc_dataobject.sum_assured = extract_text_from_next_block(blocks, i)
+        kyc_dataobject.premium = extract_text_from_next_block(blocks, i+1)
+        kyc_dataobject.premium_term = extract_text_from_next_block(blocks, i+2)
+        kyc_dataobject.policy_term = extract_text_from_next_block(blocks, i+3)
+      if is_rider(block):
+        rider_txt = block[4]
+        rider_number, rider_name = extract_rider_info(rider_txt)
+        rider_sum_assured = extract_text_from_next_block(blocks, i+5)
+        rider_premium = extract_text_from_next_block(blocks, i+6)
+        rider_premium_term = extract_text_from_next_block(blocks, i+7)
+        rider_coverage_term = extract_text_from_next_block(blocks, i+7)
+        rider = {
+          "id" : rider_number,
+          "name" : rider_name,
+          "sum_assured" : rider_sum_assured,
+          "premium" : rider_premium,
+          "premium_term" : rider_premium_term,
+          "policy_term" : rider_coverage_term,
+        }
+        riders.append(rider)
+    
+    kyc_dataobject.riders = riders
+    # kyc_dataobject.total_premium = kyc_dataobject.premium + sum(r['premium'] for r in riders)
+        
+
+# Name of policy - ok
+# Name of riders - ok
+# Premium amount - ok
+# Premium Frequency - ok
+# Life Insured - ok
+# Sum Assured - ok (TODO:Can this be different for each rider?)
+# Policy Term  - ok
+# Settlement Mode -ok
+ 
 def process_section10a( page, kyc_dataobject):
     #functions
     def has_annual_expenses(block):
@@ -66,6 +137,7 @@ def process_section10a( page, kyc_dataobject):
 
 
     #process section1
+
 def process_section1( page, kyc_dataobject):
     #functions
     def has_identitytype(block):
@@ -109,15 +181,14 @@ def process_section1( page, kyc_dataobject):
           kyc_dataobject.occupation = extract_text_from_next_block(blocks, i)
       elif has_employer(block):
           kyc_dataobject.employer = extract_text_from_next_block(blocks, i)
-  
+
+#main method
 def parse_pdf(doc):
       
     def is_section1_page(page):
       blocks = page.get_text('blocks', sort= True)
       if len(blocks) == 0:
-        pix = page.get_pixmap()
-        # Save the image to a file
-        pix.save("page_image.png")
+        return
         # image_data = pix.tobytes()  # Get raw image bytes
         # width, height = pix.width, pix.height
       first_block = blocks[0]
@@ -129,6 +200,12 @@ def parse_pdf(doc):
       first_block = blocks[0]
       txt = first_block[4]
       return 'SECTION 10A - NEEDS ANALYSIS' in txt
+
+    def is_section12_page(page):
+      blocks = page.get_text('blocks', sort= True)
+      first_block = blocks[0]
+      txt = first_block[4]
+      return 'SECTION 12 - ADVICE AND RECOMMENDATIONS' in txt
 
     #STORE ALL DATA HERE
     kyc_dataobj = KycData()
@@ -146,6 +223,9 @@ def parse_pdf(doc):
         process_section1(page, kyc_dataobj)
       elif is_section10a_page(page):
         process_section10a(page, kyc_dataobj)
+      elif is_section12_page(page):
+        process_section12(page, kyc_dataobj)
+        
       # widgets = page.widgets() NO WIDGETS CAN BE FOUND
 
     # print(kyc_dataobj.__dict__)
