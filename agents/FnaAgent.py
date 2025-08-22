@@ -21,7 +21,18 @@ class KycData:
 def extract_text_from_next_block(blocks, current_index):
     """Helper function to extract cleaned text from the next block."""
     next_block = blocks[current_index + 1]
-    return next_block[4].split('\n')[0]
+    txt = next_block[4].split('\n')[0]
+    
+    if '$' in txt:
+      try :
+        numeric_part = re.sub(r'[^\d.-]', '', txt)
+        num = float(numeric_part)
+        return num
+      except ValueError as e:
+         return 0
+      
+    
+    return txt
     
   #process cover page
 def process_firstpage( first_pg , kyc_dataobject):
@@ -94,9 +105,10 @@ def process_section12( page, kyc_dataobject):
       if is_rider(block):
         rider_txt = block[4]
         rider_number, rider_name = extract_rider_info(rider_txt)
-        rider_sum_assured = extract_text_from_next_block(blocks, i+5)
-        rider_premium = extract_text_from_next_block(blocks, i+6)
-        rider_premium_term = extract_text_from_next_block(blocks, i+7)
+        # coverage_index = 
+        rider_sum_assured = extract_text_from_next_block(blocks, i+4)
+        rider_premium = extract_text_from_next_block(blocks, i+5)
+        rider_premium_term = extract_text_from_next_block(blocks, i+6)
         rider_coverage_term = extract_text_from_next_block(blocks, i+7)
         rider = {
           "id" : rider_number,
@@ -259,10 +271,19 @@ class FnaAgent:
       pdf_doc = fitz.open(file_path) # open a document
 
       kyc_data = parse_pdf(pdf_doc)
-        
-      pprint.pprint(kyc_data.__dict__)
 
       return kyc_data
+   
+def main():
+    fna_file_path = 'resources/Term/Term-3-FNA.pdf'
+    fna_agent = FnaAgent()
+    kyc_data = fna_agent.extract(fna_file_path)
+        
+    pprint.pprint(kyc_data.__dict__, indent=2)
+
+if __name__ == "__main__":
+    main()
+
 #if url
 # url = 'some file url'
 # response = requests.get(url)
