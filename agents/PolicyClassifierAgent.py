@@ -4,6 +4,7 @@ from datetime import date
 from typing import List, Dict
 import fitz
 import logging
+import io
 # =========================
 #  Utility: PDF page text
 # =========================
@@ -49,18 +50,23 @@ class PolicyClassifierAgent:
     
     def __init__(self, api_key):
         self.api_key = api_key
-    
-    def classify(self, file_id=None , file_path=None):
+
+    def classify(self, file_id=None , file_path=None, file_obj= None):
         client = OpenAI(api_key=self.api_key)
         
-        if file_id == None and file_path == None:
-            print("Either file_id or file_path must exist.")
-            return
-        elif file_path != None and file_id == None:      
+        if file_id:
+            pass
+        elif file_path :      
             # Upload the PDF to OpenAI
             with open(file_path, "rb") as f:
                 file_response = client.files.create(file=f, purpose="user_data")
                 file_id = file_response.id
+        elif file_obj :      
+            buffered_reader= io.BufferedReader(file_obj)
+            # content = file.read()
+            # Upload the PDF to OpenAI
+            file_response = client.files.create(file=buffered_reader, purpose="user_data")
+            file_id = file_response.id
 
         logging.info("Policy classification started...")
         response = client.responses.parse(

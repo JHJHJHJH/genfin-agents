@@ -4,14 +4,14 @@ import json
 from datetime import date
 from typing import List, Literal
 import logging
-
+import io
 prompt = """
 Extract all structured data from this term insurance document using vision-based analysis.
 Instructions:
 1. If a field is missing, set it to null.
 2. Return a "`confidence`" score from 0 (guess) to 1 (high certainty)
 3. Format output as clean JSON with `"value"`, `"page"` and `"confidence"` keys for each field.
-4. Identify the policy details ("policy_name", "policy_riders" which are supplementary policies , "policy_date" in DDMMYYYY, "premium_term", "insurer_company", "sum_assured", "yearly_premium", "monthly_premium"), and parse into `"PolicyDetails"`.
+4. Identify the policy details from the `Summary Page` ("policy_name", "policy_riders" which are supplementary policies , "policy_date" in DDMMYYYY, "premium_term", "insurer_company", "sum_assured", "yearly_premium" in total payable yearly amount ), and parse into `"PolicyDetails"`.
 5. Identify the person/life insured details ("name", "age", "gender", "is_smoker"), and parse into  `"InsuredDetails"`.
 6. Identify the death benefits table, and parse "ALL" visible rows into  `"DeathBenefitTable"`. There should be more than 10 rows.
 """
@@ -41,7 +41,7 @@ class InsuredDetails(BaseModel):
     # date_of_birth : DateValue
     is_smoker : BoolValue
     def __str__(self):
-        s = 'Insured Details------------\n'
+        s = 'Personal Details------------\n'
         s += f"Name : {self.name.value} \t (Page {self.name.page} | Confidence {self.name.confidence} )\n"
         s += f"Age: {self.age.value} \t (Page {self.age.page} | Confidence {self.age.confidence} )\n"
         s += f"Gender: {self.gender.value} \t (Page {self.gender.page} | Confidence {self.gender.confidence} )\n"
@@ -74,7 +74,6 @@ class PolicyDetails(BaseModel):
     insurer_company: StrValue
     sum_assured : FloatValue
     yearly_premium : FloatValue
-    monthly_premium : FloatValue
     
     def __str__(self):
         s = 'Policy Details----------------\n'
@@ -101,17 +100,22 @@ class DocumentTermAgent:
     def __init__(self, api_key):
         self.api_key = api_key
     
-    def extract(self, file_id=None , file_path=None):
+    def extract(self, file_id=None , file_path=None, file_obj=None):
         client = OpenAI(api_key=self.api_key)
         
-        if file_id == None and file_path == None:
-            print("Either file_id or file_path must exist.")
-            return
-        elif file_path != None and file_id == None:      
+        if file_id:
+            pass
+        elif file_path :      
             # Upload the PDF to OpenAI
             with open(file_path, "rb") as f:
                 file_response = client.files.create(file=f, purpose="user_data")
                 file_id = file_response.id
+        elif file_obj :      
+            buffered_reader= io.BufferedReader(file_obj)
+            # content = file.read()
+            # Upload the PDF to OpenAI
+            file_response = client.files.create(file=buffered_reader, purpose="user_data")
+            file_id = file_response.id
 
         logging.info("Term data extraction started...")
         response = client.responses.parse(

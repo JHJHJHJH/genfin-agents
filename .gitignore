@@ -4,3 +4,4 @@ logs
 .env
 resources
 .vscode
+.streamlit/secrets.toml
