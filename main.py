@@ -27,11 +27,11 @@ pdf_path = "resources/Term/Term-1-CTP.pdf"
 # pdf_id = 'file-EddV8AV4q9dmStBwaK4Tcn' #Term-2-Singlife
 pdf_id = 'file-ASnB141Su167umcV4a2cDL' #Term-3-Singlife
 
-fna_file_path = 'resources/Term/Term-3-FNA.pdf'
+fna_file_path = 'resources/Term/Term-1-FNA.pdf'
 fna_agent = FnaAgent()
 kyc_data = fna_agent.extract(fna_file_path)
 
-logging.info("Classifing document...")
+logging.info("Classifying document...")
 # classifier_agent = PolicyClassifierAgent(open_ai_key)
 # policy_type = classifier_agent.classify(file_id=pdf_id)
 
