@@ -4,6 +4,7 @@ from io import BytesIO
 import json
 import pprint
 import re
+import logging
 class KycData:
     def __init__(self): 
         # self.client_name = None
@@ -16,6 +17,14 @@ class KycData:
         # self.mobile_number = None
         # self.email = None
         pass
+class PolicyDetails:
+  def __init__(self, id, name, sum_assured, premium, premium_term, policy_term):
+    self.id = id
+    self.name = name
+    self.sum_assured = sum_assured
+    self.premium = premium
+    self.premium_term = premium_term
+    self.policy_term = policy_term
 
   #utility
 def extract_text_from_next_block(blocks, current_index):
@@ -110,14 +119,8 @@ def process_section12( page, kyc_dataobject):
         rider_premium = extract_text_from_next_block(blocks, i+5)
         rider_premium_term = extract_text_from_next_block(blocks, i+6)
         rider_coverage_term = extract_text_from_next_block(blocks, i+7)
-        rider = {
-          "id" : rider_number,
-          "name" : rider_name,
-          "sum_assured" : rider_sum_assured,
-          "premium" : rider_premium,
-          "premium_term" : rider_premium_term,
-          "policy_term" : rider_coverage_term,
-        }
+        rider = PolicyDetails(rider_number, rider_name,rider_sum_assured , rider_premium, rider_premium_term, rider_coverage_term)
+
         riders.append(rider)
     
     kyc_dataobject.riders = riders
@@ -266,10 +269,16 @@ class FnaAgent:
    def __init__(self):
       pass
    
-   def extract(self, file_path ):
+   def extract(self, file_path = None, file_obj = None ):
       # pdf_doc = fitz.open("resources/Annuity-FNA.pdf" ) # open a document
-      pdf_doc = fitz.open(file_path) # open a document
-
+      if file_path:
+        pdf_doc = fitz.open(file_path) # open a document
+      elif file_obj:
+        pdf_doc = fitz.open(stream=file_obj.read(), filetype="pdf") # open a document
+      else :
+         logging.error("No file(s) found !")
+         return
+      
       kyc_data = parse_pdf(pdf_doc)
 
       return kyc_data
